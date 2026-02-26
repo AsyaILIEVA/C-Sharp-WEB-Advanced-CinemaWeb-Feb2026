@@ -17,7 +17,10 @@ namespace CinemaApp.Web
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+            {
+                ConfigureIdentity(builder.Configuration, options);
+            })
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
 
@@ -49,6 +52,35 @@ namespace CinemaApp.Web
             app.MapRazorPages();
 
             app.Run();
+        }
+
+        private static void ConfigureIdentity(ConfigurationManager configuration,
+            IdentityOptions options) 
+        {
+            //bool requireConfirmedAccount = configuration
+            //    .GetValue<bool>("Identity:SignIn:RequireConfirmedAccount");
+            //options.SignIn.RequireConfirmedAccount = true;
+
+            options.SignIn.RequireConfirmedAccount = configuration
+                .GetValue<bool>("Identity:SignIn:RequireConfirmedAccount");
+            options.SignIn.RequireConfirmedEmail = configuration
+                .GetValue<bool>("Identity:SignIn:RequireConfirmedEmail");
+            options.SignIn.RequireConfirmedPhoneNumber = configuration
+                .GetValue<bool>("Identity:SignIn:RequireConfirmedPhoneNumber");
+
+            options.Password.RequireDigit = configuration
+                .GetValue<bool>("Identity:Password:RequireDigit");
+            options.Password.RequiredLength = configuration
+                .GetValue<int>("Identity:Password:RequiredLength");
+            options.Password.RequiredUniqueChars = configuration
+                .GetValue<int>("Identity:Password:RequiredUniqueChars");
+            options.Password.RequireLowercase = configuration
+               .GetValue<bool>("Identity:Password:RequireLowerCase");
+            options.Password.RequireNonAlphanumeric = configuration
+               .GetValue<bool>("Identity:Password:RequireNonAlphanumeric");
+            options.Password.RequireUppercase = configuration
+               .GetValue<bool>("Identity:Password:RequireUppercase");
+
         }
     }
 }
