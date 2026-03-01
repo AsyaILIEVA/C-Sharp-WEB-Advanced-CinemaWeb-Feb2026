@@ -1,22 +1,27 @@
-﻿using CinemaApp.Services.Core.Contracts;
-using CinemaApp.Web.ViewModels.Movie;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
-namespace CinemaApp.Web.Controllers
+﻿namespace CinemaApp.Web.Controllers
 {
+    using Services.Core.Contracts;
+    using ViewModels.Movie;
+
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+
     public class MovieController : BaseController
     {
         private readonly IMovieService movieService;
-        public MovieController(IMovieService movieService) 
+
+        public MovieController(IMovieService movieService)
         {
             this.movieService = movieService;
         }
 
         [AllowAnonymous]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View(new List<AllMoviesIndexViewModel>());
+            IEnumerable<AllMoviesIndexViewModel> allMoviesViewModel = await movieService
+                .GetAllMoviesOrderedByTitleAsync();
+
+            return View(allMoviesViewModel);
         }
     }
 }
