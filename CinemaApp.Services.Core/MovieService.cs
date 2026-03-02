@@ -1,10 +1,13 @@
 ﻿namespace CinemaApp.Services.Core
-{
-    using CinemaApp.Data.Repository.Contracts;
-    using Contracts;
-    using Data;
+{ 
     using Microsoft.EntityFrameworkCore;
     using System.Globalization;
+
+    using Contracts;
+    using CinemaApp.Data.Models;
+    using CinemaApp.Data.Repository.Contracts;
+    using CinemaApp.GCommon.Exceptions;
+       
     using Web.ViewModels.Movie;
     using static GCommon.ApplicationConstants;
 
@@ -36,6 +39,26 @@
                 .ToArrayAsync();
 
             return allMoviesViewModel;
+        }
+
+        public async Task CreateMovieAsync(MovieFormModel movieFormModel)
+        {
+            Movie newMovie = new Movie()
+            {
+                Title = movieFormModel.Title,
+                Genre = movieFormModel.Genre,
+                ReleaseDate = DateOnly.FromDateTime(movieFormModel.ReleaseDate),
+                Description = movieFormModel.Description,
+                Duration = movieFormModel.Duration,
+                Director = movieFormModel.Director,
+                ImageUrl = movieFormModel.ImageUrl,
+            };
+
+            bool successAdd = await movieRepository.AddMovieAsync(newMovie);
+            if (!successAdd)
+            {
+                throw new EntityCreatePersistFailureException();
+            }
         }
     }
 }
