@@ -52,10 +52,10 @@
             {
                 await movieService.CreateMovieAsync(formModel);
             }
-            catch (EntityCreatePersistFailureException ecpfe)
+            catch (EntityPersistFailureException ecpfe)
             {
-                logger.LogError(ecpfe, CreateMovieFailureMessage);
-                ModelState.AddModelError(string.Empty, CreateMovieFailureMessage);
+                logger.LogError(ecpfe, string.Format(CrudMovieFailureMessage, nameof(Create)));
+                ModelState.AddModelError(string.Empty, string.Format(CrudMovieFailureMessage, "creating"));
 
                 return View(formModel);
             }
@@ -76,6 +76,11 @@
         [AllowAnonymous]
         public async Task<IActionResult> Details(Guid id)
         {
+            if (id == Guid.Empty)
+            {
+                return BadRequest();
+            }
+
             MovieDetailsViewModel? movieDetailsVm = await movieService
                 .GetMovieDetailsByIdAsync(id);
             if (movieDetailsVm == null)
@@ -85,5 +90,56 @@
 
             return View(movieDetailsVm);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return BadRequest();
+            }
+
+            MovieFormModel? movieFormModel = await movieService
+                .GetMovieFormModelByIdAsync(id);
+            if (movieFormModel == null)
+            {
+                return NotFound();
+            }
+
+            return View(movieFormModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit([FromRoute] Guid id, MovieFormModel formModel)
+        {
+            if (id == Guid.Empty)
+            {
+                return BadRequest();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(formModel);
+            }
+
+            try
+            {
+                await movieService.EditMovieAsync(id, formModel);
+            }
+            catch (EntityNotFoundException enfe)
+            {
+                return NotFound();
+            }
+            catch (EntityPersistFailureException epfe)
+            {
+                logger.LogError(epfe, string.Format(CrudMovieFailureMessage, nameof(Edit)));
+                ModelState.AddModelError(string.Empty, string.Format(CrudMovieFailureMessage, "editing"));
+
+                return View(formModel);
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
     }
 }
