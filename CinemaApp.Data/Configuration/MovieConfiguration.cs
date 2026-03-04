@@ -8,7 +8,10 @@ namespace CinemaApp.Data.Configuration
     {
         public void Configure(EntityTypeBuilder<Movie> entity)
         {
-            entity.HasData(SeedMovies());
+            entity
+                .HasQueryFilter(m => m.IsDeleted == false);
+            entity
+                .HasData(SeedMovies());
         }
 
         private List<Movie> SeedMovies()
